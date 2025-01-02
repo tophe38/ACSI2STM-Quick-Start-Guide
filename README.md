@@ -4,7 +4,26 @@ This document explains the steps to get the recommended hardware and software as
 
 Base on the original  to the ACSI2STM GitHub https://github.com/retro16/acsi2stm 
 
-Installing the PCB
+### ACSI2STM Hard Disk for Atari ST
+
+A modern hard disk solution for Atari ST/MegaST/STE/MegaSTE
+The ACSI2STM is an open-source hard drive emulator designed for Atari ST computers, enabling the use of SD cards as storage devices. Powered by an STM32 microcontroller, it bridges the Atari’s ACSI port with modern SD cards, providing a cost-effective, reliable, and versatile solution for expanding storage on vintage Atari systems.​
+
+### Features
+
+Support all Atari St and STE Models: Atari ST, STF, STE, Mega ST and Mega STE
+ACSI mode should also work on Atari TT
+​
+
+**2 operating Modes:**
+* **GemDrive Mode:** Offers seamless access to SD cards formatted with FAT16, FAT32, or ExFAT. This mode eliminates the need for additional drivers, making it easy to transfer files between your Atari and modern PCs. This mode is available on TOS version 1.04 and above
+* **ACSI Mode:** Emulates traditional ACSI hard drives and supports multiple partitions. This mode requires Atari-compatible hard disk drivers, offering enhanced compatibility with legacy software. This mode is available on all Atari ST, all TOS version
+
+**Real Time Clock (RTC):** Includes RTC functionality. Time and date will be saved and still ticking while the power is off.
+A 3V lithium battery (CR2032 not included) is required for this feature. 
+
+**Update firmware:** You can update the firmware sing your Atari. No special equipment is required. Just run the firmware upgrade from your Atari
+
 ### 1 - Backup battery
 Before installing, insert a CR2032 battery in the socket. The battery is only needed for keeping the clock running when the ST is off.
 See this video on how to insert the battery: https://youtu.be/rgAsQ0IYjlg
@@ -18,18 +37,54 @@ See this video on how to insert the battery: https://youtu.be/rgAsQ0IYjlg
 * Optionally, you can plug other devices such as an UltraSatan on the IDC20  socket.
 
 
-### 3A - Using microSD card formated in FAT32 in GemDrive mode
-Using Fat and Fat32 microSD cards without any other action is known as “GemDrive” mode. This is the easiest way to use the card. It does not require any driver. The microSD card will be usable on a Windows PC (to transfer files to your Atari for example).
-This mode has been tested and known to be working well on Atari ST, STE, Mega ST and Mega STE with TOS equal or above 1.04
-That mode has not been tested on Atari TT030 and Falcon030. The TOS on these machines may not work in GemDrive mode.
+3A GemDrive mode - Using microSD card formatted in FAT32 
+
  
-#### 3A.1 - Setting date and time
-In GemDrive mode, you can use any tool to set the date, such as `CONTROL.ACC` or `XCONTROL.ACC`. GemDrive redirects all system calls to the STM32 so the internal clock isn't used anymore.
+### 3A.1 - FAT32 microSD card
+
+Using Fat and Fat32 microSD cards without any other action is known as “GemDrive” mode. This is the easiest way to use the card. It does not require any driver. The microSD card will be usable on a Windows PC (to transfer files to your Atari for example).
+
+This mode has been tested and known to be working well on Atari ST, STE, Mega ST and Mega STE with TOS equal or above 1.04
+
+That mode is not available on Atari TT030 and Falcon030 or ST with TOS 1.00/1.02
+The TOS on these machines may not work in GemDrive mode.
+
+Just insert a FAT32 formatted microSD card on slot 0 and boot. You will get one drive with with one partition for each microSD card you insert. The size of the partition will be the size of the microSD card.
+
+This mode is easy to setup and will work for most applications. If you are planning to use your hard drive for sampling/streaming, you may get better result and speed with the ACSI mode explained in sections 3B. 
+
+Here a short video showing how to use the card in GemDrive mode: https://youtu.be/_jP6d4z2Qq4
+
+Limitations
+-----------
+* Truncates long file names, as TOS doesn't support them.
+* Only one partition per SD card.
+* Works around some TOS limitations by using (relatively safe) heuristics,
+  but there may be issues in some very extreme corner cases.
+* Hooks the whole system unconditionally: may decrease performance in some
+  extreme cases. Also, the STM32 can stall the whole TOS in case of error.
+* TOS versions below 1.04 (Rainbow TOS) lack necessary APIs to implement Pexec
+  properly, meaning that running a program will leak a small amount of RAM.
+  This is also the case in Hatari.
+* File descriptors are leaked when terminating a process with Ctrl-C. There is
+  no system call to catch this event.
+* Not compatible with MiNT or any other TOS replacement.
+* Not compatible with OS-level multitasking (MultiTOS, ...).
+* Mimics TOS 1.04, TOS 1.62 and TOS 2.06 behavior (and some of its bugs), so
+  software relying on other TOS versions can have issues.
+ 
+### 3A.2 - Setting date and time
+
+In GemDrive mode, you can use any tool to set the date, such as CONTROL.ACC or XCONTROL.ACC. GemDrive redirects all system calls to the STM32 so the internal clock isn't used anymore.
 
 ### 3B ACSI mode - Using microSD card ACSI mode
 
 Use a ready-made ACSI disk image If you have a bootable hard disk image, the following sections will describe how to use it.
-
+If you have a bootable hard disk image, the following sections will describe how to use it.
+These hard disk images are the same using by the HATARI emulator on PC and similar to the one used by UltraSatan.
+They are also hard disk images preloaded with games and application available on the internet you can use the same way.
+For copyright reasons, I only supply empty, ready to use images on this page.
+​
 #### 3B.1 - Transfering a disk image to a raw SD card
 
 Using a raw SD card is a bit faster than copying the image file.
@@ -46,10 +101,13 @@ To transfer images to the disk, you can use [Raspberry Pi Imager](https://www.ra
 * The SD card can now be used on the ST.
 
 Use a ready-made ACSI disk image.
+
 If you have a bootable hard disk image, the following sections will describe how to use it.
 These hard disk images are the same using by the HATARI emulator on PC and similar to the one used by UltraSatan.
 They are also hard dick images preloaded with games and application available on the internet you can use the same way.
 For copyright reasons, I only supply empty, ready to use images on this page.
+
+[Here is the ICD655 Driver](Disk_Images/icdp655a.zip)
 
 #### 3B.2 - Using the image directly
 
@@ -65,14 +123,14 @@ When working with disk images, the SD card can be of any size, as long as it use
 
 You can copy more than one disk image xxxxx.img on to the SD card, but only hd0.img will be used.
 ​
-Here is the ICD655 Driver : [Here](https://www.16-32bit.eu/_files/archives/63ce4b_ccdfc6f34217437ea4086139b8463f0c.zip?dn=icdp655a.zip)
+Here is the ICD655 Driver : [Here](Disk_Images/icdp655a.zip)
 ​
 #### 3B.3 ACSI Images files:
-* [Image ICD Demo 14Mb](https://www.16-32bit.eu/_files/archives/63ce4b_3082677628774ea6b7d22948327123b6.zip?dn=ICDPROD_BOOTABLE_14Mb.zip)
-* [Image ICD 16Mb + 4x256Mb Compatible with TOS 1.02](https://www.16-32bit.eu/_files/archives/63ce4b_3082677628774ea6b7d22948327123b6.zip?dn=ICDPROD_BOOTABLE_14Mb.zip)
+* [Image ICD Demo 14Mb](Disk_Images/ICDPROD_BOOTABLE_14Mb.zip)
+* [Image ICD 16Mb + 4x256Mb Compatible with TOS 1.02](https://www.16-32bit.eu/_files/archives/63ce4b_b8d969461fba416cad41c2c926495b3e.zip?dn=ICDPRO_BOOTABLE_16MB_4x256MB_tos_1.02.zip)
 * [Image ICD 32Mb + 2x512Mb for TOS > 1.02](https://www.16-32bit.eu/_files/archives/63ce4b_b122616693ea48bc9eac5dcafcea65c9.zip?dn=ICDPRO_BOOTABLE_32MB_2x512MB_tos_higer_than_102_with_utils_v1_3.zip)
-* [Image HDDriver Demo 640Mb](https://www.16-32bit.eu/_files/archives/63ce4b_890f1bd292f6427ea6aa3f919798ce90.zip?dn=HDDRIVER120_BOOTABLE_SCSI_640Kb.zip)
-* [Image AHDI_BOOTABLE_16Mb_1x256Mb](https://www.16-32bit.eu/_files/archives/63ce4b_488643455a554d4296f8df1ea7175351.zip?dn=AHDI_BOOTABLE_16Mb_1x256Mb.zip)  ([AHDI Driver used](https://www.16-32bit.eu/_files/archives/63ce4b_d6d9fac01a0843d38af821cc3d2d7789.zip?dn=ahdi6061.zip))
+* [Image HDDriver Demo 640Mb](Disk_Images/HDDRIVER120_BOOTABLE_SCSI_640Kb.zip)
+* [Image AHDI_BOOTABLE_16Mb_1x256Mb](Disk_Images/AHDI_BOOTABLE_16Mb_1x256Mb.zip)  ([AHDI Driver used](https://www.16-32bit.eu/_files/archives/63ce4b_d6d9fac01a0843d38af821cc3d2d7789.zip?dn=ahdi6061.zip))
 * [Image ICD 8x512MB (4Go)](Disk_Images/4GoICD.7z)
 * [Image ICD 14x512MB (8Go)](Disk_Images/8GoICD.7z)
 
